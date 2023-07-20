@@ -25,10 +25,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef P4_TO_P8
 #include <forestclaw2d.h>
+#include <fclaw2d_defs.h>
 #include <p4est_bits.h>
 #include <p4est_wrap.h>
 #else
 #include <forestclaw3d.h>
+#include <fclaw3d_defs.h>
 #include <p8est_bits.h>
 #include <p8est_wrap.h>
 #endif
@@ -1797,18 +1799,21 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
 {
     int num_exc;
     int neall, nb, ne, np;
-    int face;
+    int face, corner;
     int *pbdata, *pi;
-    int *rproc, *rblockno, *rpatchno, *rfaceno;
+    int *rproc, *rblockno, *rpatchno, *rfaceno, *rcornerno;
     size_t data_size;
     fclaw2d_block_t *block;
     fclaw2d_domain_indirect_t *ind;
-    fclaw2d_patch_relation_t prel;
+    fclaw2d_patch_relation_t prel, rsize;
     p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
     p4est_ghost_t *ghost = p4est_wrap_get_ghost (wrap);
+    int num_fc;
+    int has_corner;
 
     num_exc = domain->num_exchange_patches;
-    data_size = P4EST_FACES * 6 * sizeof (int);
+    num_fc = P4EST_FACES + FCLAW2D_NUMCORNERS;
+    data_size = num_fc * 6 * sizeof (int);
 
     /* allocate internal state for this operation */
     ind = FCLAW_ALLOC_ZERO (fclaw2d_domain_indirect_t, 1);
@@ -1816,7 +1821,7 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
     ind->e = fclaw2d_domain_allocate_before_exchange (domain, data_size);
 
     /* loop through exchange patches and fill their neighbor information */
-    pbdata = pi = FCLAW_ALLOC (int, num_exc * P4EST_FACES * 6);
+    pbdata = pi = FCLAW_ALLOC (int, num_exc * num_fc * 6);
     for (neall = 0, nb = 0; nb < domain->num_blocks; ++nb)
     {
         block = domain->blocks + nb;
@@ -1849,9 +1854,37 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
                 }
                 pi += 6;
             }
+            for (corner = 0; corner < FCLAW2D_NUMCORNERS; ++corner)
+            {
+                indirect_match (pi, &rproc, &rblockno, &rpatchno, &rcornerno);
+                has_corner = fclaw2d_patch_corner_neighbors
+                    (domain, nb, np, corner, rproc, rblockno, rpatchno,
+                     rcornerno, &rsize);
+                rproc[1] = rpatchno[1] = -1;    /* only used for face neighbors */
+
+                if (has_corner)
+                {
+                    /* obtain proper ghost patch numbers for the receiver */
+                    indirect_encode (ghost, domain->mpirank,
+                                     &rproc[0], &rpatchno[0]);
+                    if (rsize == FCLAW2D_PATCH_HALFSIZE)
+                    {
+                        *rcornerno |= 1 << 26;
+                    }
+                    else if (rsize == FCLAW2D_PATCH_DOUBLESIZE)
+                    {
+                        *rcornerno |= 1 << 27;
+                    }
+                }
+                else
+                {
+                    rproc[0] = rpatchno[0] = -1;
+                }
+                pi += 6;
+            }
         }
     }
-    FCLAW_ASSERT ((int) (pi - pbdata) == neall * P4EST_FACES * 6);
+    FCLAW_ASSERT ((int) (pi - pbdata) == neall * num_fc * 6);
     FCLAW_ASSERT (neall == num_exc);
 
     /* post messages */
