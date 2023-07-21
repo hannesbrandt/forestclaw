@@ -25,12 +25,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef P4_TO_P8
 #include <forestclaw2d.h>
-#include <fclaw2d_defs.h>
 #include <p4est_bits.h>
 #include <p4est_wrap.h>
 #else
 #include <forestclaw3d.h>
-#include <fclaw3d_defs.h>
 #include <p8est_bits.h>
 #include <p8est_wrap.h>
 #endif
@@ -1812,7 +1810,7 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
     int has_corner;
 
     num_exc = domain->num_exchange_patches;
-    num_fc = P4EST_FACES + FCLAW2D_NUMCORNERS;
+    num_fc = P4EST_FACES + P4EST_CHILDREN;
     data_size = num_fc * 6 * sizeof (int);
 
     /* allocate internal state for this operation */
@@ -1854,7 +1852,7 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
                 }
                 pi += 6;
             }
-            for (corner = 0; corner < FCLAW2D_NUMCORNERS; ++corner)
+            for (corner = 0; corner < P4EST_CHILDREN; ++corner)
             {
                 indirect_match (pi, &rproc, &rblockno, &rpatchno, &rcornerno);
                 has_corner = fclaw2d_patch_corner_neighbors
@@ -2071,7 +2069,7 @@ fclaw2d_domain_indirect_end (fclaw2d_domain_t * domain,
             }
 
             /* go through corner neighbor patches of this ghost */
-            for (corner = 0; corner < FCLAW2D_NUMCORNERS; ++corner)
+            for (corner = 0; corner < P4EST_CHILDREN; ++corner)
             {
                 /* access values that were shipped with the ghost */
                 indirect_match (pi, &rproc, &rblockno, &rpatchno, &rcornerno);
@@ -2202,7 +2200,7 @@ fclaw2d_domain_indirect_corner_neighbor (fclaw2d_domain_t * domain,
     FCLAW_ASSERT (domain == ind->domain);
 
     FCLAW_ASSERT (0 <= ghostno && ghostno < domain->num_ghost_patches);
-    FCLAW_ASSERT (0 <= cornerno && cornerno < FCLAW2D_NUMCORNERS);
+    FCLAW_ASSERT (0 <= cornerno && cornerno < P4EST_CHILDREN);
 
     /* check the type of neighbor situation */
     pi = (int *) ind->e->ghost_data[ghostno] + 6 * (P4EST_FACES + cornerno);
@@ -2211,7 +2209,7 @@ fclaw2d_domain_indirect_corner_neighbor (fclaw2d_domain_t * domain,
     *rblockno = *grblockno;
     FCLAW_ASSERT (0 <= *rblockno && *rblockno < domain->num_blocks);
     *rcornerno = *grcornerno & ~(3 << 26);
-    FCLAW_ASSERT (-1 <= *rcornerno && *rcornerno < FCLAW2D_NUMCORNERS);
+    FCLAW_ASSERT (-1 <= *rcornerno && *rcornerno < P4EST_CHILDREN);
     if (!(*grcornerno & (3 << 26)))
     {
         if (grproc[0] == -1)
