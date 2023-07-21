@@ -1879,6 +1879,7 @@ fclaw2d_domain_indirect_begin (fclaw2d_domain_t * domain)
                 else
                 {
                     rproc[0] = rpatchno[0] = -1;
+                    *rcornerno = corner;        /* rcornerno == -1 messes with & operator */
                 }
                 pi += 6;
             }
@@ -1981,8 +1982,8 @@ fclaw2d_domain_indirect_end (fclaw2d_domain_t * domain,
     int gprev;
 #endif
     int gpatch;
-    int face;
-    int *rproc, *rblockno, *rpatchno, *rfaceno;
+    int face, corner;
+    int *rproc, *rblockno, *rpatchno, *rfaceno, *rcornerno;
     int *pi;
     uint64_t *pli_keys, *plik;
     sc_hash_t *pli_hash;
@@ -2066,6 +2067,32 @@ fclaw2d_domain_indirect_end (fclaw2d_domain_t * domain,
                 }
 
                 /* move to the next face data item */
+                pi += 6;
+            }
+
+            /* go through corner neighbor patches of this ghost */
+            for (corner = 0; corner < FCLAW2D_NUMCORNERS; ++corner)
+            {
+                /* access values that were shipped with the ghost */
+                indirect_match (pi, &rproc, &rblockno, &rpatchno, &rcornerno);
+                FCLAW_ASSERT (rproc[1] == -1 && rpatchno[1] == -1);
+
+                /* check corner neighbor */
+                FCLAW_ASSERT (rproc[0] != p);
+                good = indirect_decode (pli_hash, pli_keys,
+                                        domain->mpisize, domain->mpirank,
+                                        &rproc[0], &rpatchno[0]);
+                FCLAW_ASSERT ((rproc[0] == -1 && rpatchno[0] == -1) ||
+                              (0 <= rpatchno[0] && rpatchno[0] < ndgp));
+
+                /* no match on this corner; we pretend a boundary situation */
+                if (!good)
+                {
+                    FCLAW_ASSERT (rproc[0] == -1);
+                    FCLAW_ASSERT (rpatchno[0] == -1);
+                    *rcornerno &= ~(3 << 26);
+                }
+
                 pi += 6;
             }
         }
