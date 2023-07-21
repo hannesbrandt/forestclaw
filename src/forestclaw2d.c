@@ -2190,11 +2190,71 @@ fclaw2d_domain_indirect_face_neighbors (fclaw2d_domain_t * domain,
 fclaw2d_patch_relation_t
 fclaw2d_domain_indirect_corner_neighbor (fclaw2d_domain_t * domain,
                                          fclaw2d_domain_indirect_t * ind,
-                                         int ghostno, int faceno, int *rproc,
-                                         int *rblockno, int *rpatchno,
-                                         int *rfaceno)
+                                         int ghostno, int cornerno,
+                                         int *rproc, int *rblockno,
+                                         int *rpatchno, int *rcornerno)
 {
-    return FCLAW2D_PATCH_BOUNDARY;
+    int *pi;
+    int *grproc, *grblockno, *grpatchno, *grcornerno;
+    fclaw2d_patch_relation_t prel;
+
+    FCLAW_ASSERT (ind != NULL && ind->ready);
+    FCLAW_ASSERT (domain == ind->domain);
+
+    FCLAW_ASSERT (0 <= ghostno && ghostno < domain->num_ghost_patches);
+    FCLAW_ASSERT (0 <= cornerno && cornerno < FCLAW2D_NUMCORNERS);
+
+    /* check the type of neighbor situation */
+    pi = (int *) ind->e->ghost_data[ghostno] + 6 * (P4EST_FACES + cornerno);
+    indirect_match (pi, &grproc, &grblockno, &grpatchno, &grcornerno);
+    FCLAW_ASSERT (grproc[1] == -1 && grpatchno[1] == -1);
+    *rblockno = *grblockno;
+    FCLAW_ASSERT (0 <= *rblockno && *rblockno < domain->num_blocks);
+    *rcornerno = *grcornerno & ~(3 << 26);
+    FCLAW_ASSERT (-1 <= *rcornerno && *rcornerno < FCLAW2D_NUMCORNERS);
+    if (!(*grcornerno & (3 << 26)))
+    {
+        if (grproc[0] == -1)
+        {
+            /* optimize for the most likely case */
+            FCLAW_ASSERT (grproc[0] == -1 && grpatchno[0] == -1);
+            rproc[0] = rpatchno[0] = -1;
+            return FCLAW2D_PATCH_BOUNDARY;
+        }
+        else
+        {
+            prel = FCLAW2D_PATCH_SAMESIZE;
+        }
+    }
+    else
+    {
+        if (*grcornerno & (1 << 26))
+        {
+            FCLAW_ASSERT (!(*grcornerno & (1 << 27)));
+            prel = FCLAW2D_PATCH_HALFSIZE;
+        }
+        else
+        {
+            FCLAW_ASSERT (*grcornerno & (1 << 27));
+            prel = FCLAW2D_PATCH_DOUBLESIZE;
+        }
+    }
+
+    /* align the remaining output values */
+    rproc[0] = grproc[0];
+    rpatchno[0] = grpatchno[0];
+#ifdef FCLAW_ENABLE_DEBUG
+    if (rproc[0] != -1)
+    {
+        FCLAW_ASSERT (0 <= rproc[0] && rproc[0] < domain->mpisize);
+        FCLAW_ASSERT (rproc[0] != domain->mpirank);
+        FCLAW_ASSERT (0 <= rpatchno[0] &&
+                      rpatchno[0] < domain->num_ghost_patches);
+    }
+#endif
+
+    /* and return */
+    return prel;
 }
 
 void
