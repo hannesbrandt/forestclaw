@@ -777,15 +777,40 @@ fclaw_domain_iterate_adapted(fclaw_domain_t *old_domain, fclaw_domain_t *new_dom
     }
 }
 
-void fclaw_domain_allocate_before_partition(fclaw_domain_t *domain, size_t data_size, void ***patch_data)
+void
+fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
+                                        size_t data_size,
+                                        void ***patch_data,
+                                        fclaw_pack_callback_t patch_pack,
+                                        void *user_pack,
+                                        fclaw_pack_callback_t patch_unpack,
+                                        void *user_unpack)
 {
+    fclaw_pack_wrap_user_t patch_pack_wrap_user, patch_unpack_wrap_user;
+    patch_pack_wrap_user.pcb = patch_pack;
+    patch_pack_wrap_user.user = user_pack;
+    patch_unpack_wrap_user.pcb = patch_unpack;
+    patch_unpack_wrap_user.user = user_unpack;
+
     if(domain->refine_dim == 2)
     {
-        fclaw2d_domain_allocate_before_partition(domain->d2,data_size,patch_data);
+        fclaw2d_domain_allocate_before_partition(domain->d2,
+                                                 data_size,
+                                                 patch_data,
+                                                 fclaw2d_pack_wrap_cb,
+                                                 &patch_pack_wrap_user,
+                                                 fclaw2d_pack_wrap_cb,
+                                                 &patch_unpack_wrap_user);
     }
     else if (domain->refine_dim == 3)
     {
-        fclaw3d_domain_allocate_before_partition(domain->d3,data_size,patch_data);
+        fclaw3d_domain_allocate_before_partition(domain->d3,
+                                                 data_size,
+                                                 patch_data,
+                                                 fclaw3d_pack_wrap_cb,
+                                                 &patch_pack_wrap_user,
+                                                 fclaw3d_pack_wrap_cb,
+                                                 &patch_unpack_wrap_user);
     }
     else
     {

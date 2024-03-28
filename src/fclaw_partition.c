@@ -127,7 +127,8 @@ void fclaw_partition_domain(fclaw_global_t* glob,
     void ** patch_data = NULL;
 
     fclaw_domain_allocate_before_partition (*domain, data_size,
-                                              &patch_data);
+                                            &patch_data, NULL, NULL, NULL,
+                                            NULL);
 
     /* For all (patch i) { pack its numerical data into patch_data[i] }
        Does all the data in every patch need to be copied?  */

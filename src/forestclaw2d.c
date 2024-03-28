@@ -1548,8 +1548,24 @@ fclaw2d_domain_assign_for_partition (fclaw2d_domain_t * domain,
 void
 fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
                                           size_t data_size,
-                                          void ***patch_data)
+                                          void ***patch_data,
+                                          fclaw2d_pack_callback_t patch_pack,
+                                          void *user_pack,
+                                          fclaw2d_pack_callback_t
+                                          patch_unpack, void *user_unpack)
 {
+    fclaw2d_domain_partition_t *p;
+
+    /* store the packing callbacks in the domains partition context */
+    FCLAW_ASSERT (domain->partition_context == NULL);
+    p = FCLAW_ALLOC (fclaw2d_domain_partition_t, 1);
+    p->data_size = 10;
+    p->patch_pack = patch_pack;
+    p->user_pack = user_pack;
+    p->patch_unpack = patch_unpack;
+    p->user_unpack = user_unpack;
+    domain->partition_context = p;
+
     p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
 
     FCLAW_ASSERT (*patch_data == NULL);
@@ -1708,6 +1724,11 @@ fclaw2d_domain_free_after_partition (fclaw2d_domain_t * domain,
 
     FCLAW_FREE (*patch_data);
     *patch_data = NULL;
+
+    /* free partition_context allocated in allocate_before_partition */
+    FCLAW_ASSERT (domain->partition_context != NULL);
+    FCLAW_FREE (domain->partition_context);
+    domain->partition_context = NULL;
 
     p4est_reset_data (wrap->p4est, 0, NULL, wrap->p4est->user_pointer);
 }

@@ -64,6 +64,16 @@ void fclaw3d_patch_wrap_cb(fclaw3d_domain_t * domain,
                            int blockno, int patchno, void *user);
 
 /**
+ * @brief Wraps a pack callback for 3d domains.
+ * This is used by passing this callback to a function that takes a @ref fclaw3d_pack_callback_t.
+ * The user pointer should be a pointer to a @ref fclaw_pack_wrap_user_t.
+ */
+void fclaw3d_pack_wrap_cb (fclaw3d_domain_t * domain,
+                           fclaw3d_patch_t * patch,
+                           int blockno, int patchno, void *pack_data_here,
+                           void *user);
+
+/**
  * @brief Wraps a transfer callback for 2d domains.
  * This is used by passing this callback to a function that takes a @ref fclaw2d_transfer_callback_t.
  * The user pointer should be a pointer to a @ref fclaw_transfer_wrap_user_t.

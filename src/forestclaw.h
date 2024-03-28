@@ -921,6 +921,11 @@ void fclaw_domain_iterate_adapted (fclaw_domain_t * old_domain,
 /* ---------------------------------------------------------------------- */
 ///@{
 
+typedef void (*fclaw_pack_callback_t) (fclaw_domain_t * domain,
+                                       fclaw_patch_t * patch, int blockno,
+                                       int patchno, void *pack_data_here,
+                                       void *user);
+
 /** Allocate data buffer for parallel transfer of all patches.
  * \param [in,out] domain       The memory lives inside this domain.
  * \param [in] data_size        Number of bytes per patch to transfer.
@@ -933,7 +938,11 @@ void fclaw_domain_iterate_adapted (fclaw_domain_t * old_domain,
  */
 void fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
                                              size_t data_size,
-                                             void ***patch_data);
+                                             void ***patch_data,
+                                             fclaw_pack_callback_t patch_pack,
+                                             void *user_pack,
+                                             fclaw_pack_callback_t patch_unpack,
+                                             void *user_unpack);
 
 /** Reallocate data buffer to reflect patch data after partition.
  * \param [in,out] domain       The memory lives inside this domain.

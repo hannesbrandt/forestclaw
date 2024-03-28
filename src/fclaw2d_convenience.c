@@ -719,6 +719,9 @@ fclaw2d_domain_partition (fclaw2d_domain_t * domain, int weight_exponent)
         newd->partition_unchanged_first = (int) uf;
         newd->partition_unchanged_length = (int) ul;
         newd->partition_unchanged_old_first = (int) uof;
+        /* the new domain takes ownership of the partition_context */
+        newd->partition_context = domain->partition_context;
+        domain->partition_context = NULL;
 
         fclaw2d_domain_copy_parameters (newd, domain);
         return newd;
