@@ -154,11 +154,6 @@ void fclaw_partition_domain(fclaw_global_t* glob,
                                             &patch_data, cb_patch_pack, glob,
                                             cb_patch_unpack, glob);
 
-    /* For all (patch i) { pack its numerical data into patch_data[i] }
-       Does all the data in every patch need to be copied?  */
-    fclaw_global_iterate_patches(glob,
-                                   cb_partition_pack,
-                                   (void *) patch_data);
     fclaw_timer_stop (&glob->timers[FCLAW_TIMER_PARTITION_BUILD]);
 
 
