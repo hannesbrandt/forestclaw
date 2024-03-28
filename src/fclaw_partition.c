@@ -33,6 +33,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <fclaw_options.h>
 
+static void
+cb_patch_pack (fclaw_domain_t * domain,
+               fclaw_patch_t * patch,
+               int blockno, int patchno, void *pack_data_here, void *user)
+{
+    FCLAW_ASSERT (user != NULL);
+    fclaw_global_t *glob = (fclaw_global_t *) user;
+
+    fclaw_patch_partition_pack (glob, patch, blockno, patchno,
+                                pack_data_here);
+}
+
+static void
+cb_patch_unpack (fclaw_domain_t * domain,
+                 fclaw_patch_t * patch,
+                 int blockno, int patchno, void *pack_data_here, void *user)
+{
+    FCLAW_ASSERT (user != NULL);
+    fclaw_global_t *glob = (fclaw_global_t *) user;
+
+    fclaw_patch_partition_unpack (glob, domain, patch, blockno, patchno,
+                                  pack_data_here);
+}
+
 static
 void cb_partition_pack(fclaw_domain_t *domain,
                        fclaw_patch_t *patch,
@@ -127,8 +151,8 @@ void fclaw_partition_domain(fclaw_global_t* glob,
     void ** patch_data = NULL;
 
     fclaw_domain_allocate_before_partition (*domain, data_size,
-                                            &patch_data, NULL, NULL, NULL,
-                                            NULL);
+                                            &patch_data, cb_patch_pack, glob,
+                                            cb_patch_unpack, glob);
 
     /* For all (patch i) { pack its numerical data into patch_data[i] }
        Does all the data in every patch need to be copied?  */
