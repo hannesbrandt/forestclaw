@@ -166,6 +166,18 @@ void fclaw2d_patch_wrap_cb(fclaw2d_domain_t * domain_2d,
 }
 
 void
+fclaw2d_pack_wrap_cb (fclaw2d_domain_t * domain_2d,
+                      fclaw2d_patch_t * patch_2d,
+                      int blockno, int patchno, void *pack_data_here,
+                      void *user)
+{
+    fclaw_pack_wrap_user_t *wrap = (fclaw_pack_wrap_user_t *) user;
+    fclaw_domain_t *domain = get_domain (domain_2d);
+    fclaw_patch_t *patch = get_patch (patch_2d);
+    wrap->pcb (domain, patch, blockno, patchno, pack_data_here, wrap->user);
+}
+
+void
 fclaw2d_transfer_wrap_cb(fclaw2d_domain_t * old_domain_2d,
                                fclaw2d_patch_t * old_patch_2d,
                                fclaw2d_domain_t * new_domain_2d,

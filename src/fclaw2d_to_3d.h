@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define fclaw2d_patch_callback_t        fclaw3d_patch_callback_t
 #define fclaw2d_patch_relation_t        fclaw3d_patch_relation_t
 #define fclaw2d_match_callback_t        fclaw3d_match_callback_t
+#define fclaw2d_pack_callback_t         fclaw3d_pack_callback_t
+#define fclaw2d_domain_partition_t      fclaw3d_domain_partition_t
 #define fclaw2d_transfer_callback_t     fclaw3d_transfer_callback_t
 #define fclaw2d_domain_exchange_t       fclaw3d_domain_exchange_t
 #define fclaw2d_domain_indirect         fclaw3d_domain_indirect
@@ -207,6 +209,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* translations for dimension independent wrapper functions/types */
 #define fclaw_domain_wrap_2d               fclaw_domain_wrap_3d
 #define fclaw2d_patch_wrap_cb              fclaw3d_patch_wrap_cb
+#define fclaw2d_pack_wrap_cb               fclaw3d_pack_wrap_cb
 #define fclaw2d_transfer_wrap_cb           fclaw3d_transfer_wrap_cb
 #define fclaw2d_match_wrap_cb              fclaw3d_match_wrap_cb
 #define fclaw2d_intersect_wrap_cb          fclaw3d_intersect_wrap_cb

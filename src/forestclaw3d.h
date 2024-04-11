@@ -162,6 +162,8 @@ typedef struct fclaw3d_domain_persist
 }
 fclaw3d_domain_persist_t;
 
+typedef struct fclaw3d_domain_partition fclaw3d_domain_partition_t;
+
 /**
  * @brief The domain structure is a collection of blocks
  * 
@@ -200,6 +202,7 @@ struct fclaw3d_domain
     int partition_unchanged_first;      /**< local index of first unchanged patch */
     int partition_unchanged_length;     /**< number of unchanged quadrants */
     int partition_unchanged_old_first;  /**< local index wrt. previous partition */
+    fclaw3d_domain_partition_t *partition_context;    /**< info necessary to partition patch data */
 
     int num_blocks;             /**< Total number of blocks. */
     fclaw3d_block_t *blocks;    /**< allocated storage */
@@ -852,9 +855,24 @@ void fclaw3d_domain_iterate_adapted (fclaw3d_domain_t * old_domain,
 
 ///@}
 /* ---------------------------------------------------------------------- */
-///                         @name Parititon
+///                         @name Partition
 /* ---------------------------------------------------------------------- */
 ///@{
+
+typedef void (*fclaw3d_pack_callback_t) (fclaw3d_domain_t * domain,
+                                         fclaw3d_patch_t * patch, int blockno,
+                                         int patchno, void *pack_data_here,
+                                         void *user);
+
+typedef struct fclaw3d_domain_partition
+{
+    size_t data_size; /**< The number of bytes per patch to send */
+    fclaw3d_pack_callback_t patch_pack;
+    void *user_pack;
+    fclaw3d_pack_callback_t patch_unpack;
+    void *user_unpack;
+}
+fclaw3d_domain_partition_t;
 
 /** Allocate data buffer for parallel transfer of all patches.
  * \param [in,out] domain       The memory lives inside this domain.
@@ -868,7 +886,12 @@ void fclaw3d_domain_iterate_adapted (fclaw3d_domain_t * old_domain,
  */
 void fclaw3d_domain_allocate_before_partition (fclaw3d_domain_t * domain,
                                                size_t data_size,
-                                               void ***patch_data);
+                                               void ***patch_data,
+                                               fclaw3d_pack_callback_t
+                                               patch_pack, void *user_pack,
+                                               fclaw3d_pack_callback_t
+                                               patch_unpack,
+                                               void *user_unpack);
 
 /** Reallocate data buffer to reflect patch data after partition.
  * \param [in,out] domain       The memory lives inside this domain.
