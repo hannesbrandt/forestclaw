@@ -792,7 +792,6 @@ fclaw2d_domain_partition_t;
  */
 void fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
                                                size_t data_size,
-                                               void ***patch_data,
                                                fclaw2d_pack_callback_t
                                                patch_pack, void *user_pack,
                                                fclaw2d_transfer_callback_t
@@ -808,8 +807,7 @@ void fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
  *                              memory that can be read from by forestclaw.
  */
 void fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * old_domain,
-                                              fclaw2d_domain_t * new_domain,
-                                              void ***patch_data);
+                                              fclaw2d_domain_t * new_domain);
 
 /** Iterate over the previous and partitioned domain simultaneously.
  * We iterate over local patches only.
@@ -828,8 +826,7 @@ void fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
  * \param [in,out] patch_data   Address of an array of void pointers to free.
  *                              *patch_data will be NULL after the call.
  */
-void fclaw2d_domain_free_after_partition (fclaw2d_domain_t * domain,
-                                          void ***patch_data);
+void fclaw2d_domain_free_after_partition (fclaw2d_domain_t * domain);
 
 ///@}
 /* ---------------------------------------------------------------------- */

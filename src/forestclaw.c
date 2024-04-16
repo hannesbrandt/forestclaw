@@ -780,7 +780,6 @@ fclaw_domain_iterate_adapted(fclaw_domain_t *old_domain, fclaw_domain_t *new_dom
 void
 fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
                                         size_t data_size,
-                                        void ***patch_data,
                                         fclaw_pack_callback_t patch_pack,
                                         void *user_pack,
                                         fclaw_transfer_callback_t
@@ -800,7 +799,6 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
     {
         fclaw2d_domain_allocate_before_partition(domain->d2,
                                                  data_size,
-                                                 patch_data,
                                                  fclaw2d_pack_wrap_cb,
                                                  patch_pack_wrap_user,
                                                  fclaw2d_transfer_wrap_cb,
@@ -810,7 +808,6 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
     {
         fclaw3d_domain_allocate_before_partition(domain->d3,
                                                  data_size,
-                                                 patch_data,
                                                  fclaw3d_pack_wrap_cb,
                                                  patch_pack_wrap_user,
                                                  fclaw3d_transfer_wrap_cb,
@@ -823,18 +820,15 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
 }
 
 void fclaw_domain_retrieve_after_partition(fclaw_domain_t *old_domain,
-                                           fclaw_domain_t *new_domain,
-                                           void ***patch_data)
+                                           fclaw_domain_t *new_domain)
 {
     if(old_domain->refine_dim == 2)
     {
-        fclaw2d_domain_retrieve_after_partition(old_domain->d2, new_domain->d2,
-                                                patch_data);
+        fclaw2d_domain_retrieve_after_partition(old_domain->d2, new_domain->d2);
     }
     else if (old_domain->refine_dim == 3)
     {
-        fclaw3d_domain_retrieve_after_partition(old_domain->d3, new_domain->d3,
-                                                patch_data);
+        fclaw3d_domain_retrieve_after_partition(old_domain->d3, new_domain->d3);
     }
     else
     {
@@ -870,21 +864,21 @@ void fclaw_domain_iterate_partitioned(fclaw_domain_t *old_domain, fclaw_domain_t
     }
 }
 
-void fclaw_domain_free_after_partition(fclaw_domain_t *domain, void ***patch_data)
+void fclaw_domain_free_after_partition(fclaw_domain_t *domain)
 {
     if(domain->refine_dim == 2)
     {
         fclaw2d_domain_partition_t *p = domain->d2->partition_context;
         FCLAW_FREE (p->user_pack);
         FCLAW_FREE (p->user_transfer);
-        fclaw2d_domain_free_after_partition(domain->d2,patch_data);
+        fclaw2d_domain_free_after_partition(domain->d2);
     }
     else if (domain->refine_dim == 3)
     {
         fclaw3d_domain_partition_t *p = domain->d3->partition_context;
         FCLAW_FREE (p->user_pack);
         FCLAW_FREE (p->user_transfer);
-        fclaw3d_domain_free_after_partition(domain->d3,patch_data);
+        fclaw3d_domain_free_after_partition(domain->d3);
     }
     else
     {

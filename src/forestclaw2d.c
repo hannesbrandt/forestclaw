@@ -1515,37 +1515,6 @@ fclaw2d_domain_iterate_adapted (fclaw2d_domain_t * old_domain,
 }
 
 static void
-fclaw2d_domain_assign_for_partition (fclaw2d_domain_t * domain,
-                                     void **patch_data)
-{
-    int blockno, patchno;
-    size_t zz;
-    fclaw2d_block_t *block;
-    p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
-    p4est_tree_t *tree;
-    p4est_quadrant_t *q;
-
-    for (zz = 0, blockno = 0; blockno < domain->num_blocks; ++blockno)
-    {
-        block = domain->blocks + blockno;
-        tree =
-            p4est_tree_array_index (wrap->p4est->trees,
-                                    (p4est_topidx_t) blockno);
-
-        for (patchno = 0; patchno < block->num_patches; ++zz, ++patchno)
-        {
-            FCLAW_ASSERT (zz ==
-                          (size_t) (block->num_patches_before + patchno));
-
-            q = p4est_quadrant_array_index (&tree->quadrants,
-                                            (p4est_locidx_t) patchno);
-            patch_data[zz] = q->p.user_data;
-        }
-    }
-    FCLAW_ASSERT (zz == (size_t) domain->local_num_patches);
-}
-
-static void
 fclaw2d_domain_pack_patches (fclaw2d_domain_t * domain)
 {
     int blockno, patchno;
@@ -1584,7 +1553,6 @@ fclaw2d_domain_pack_patches (fclaw2d_domain_t * domain)
 void
 fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
                                           size_t data_size,
-                                          void ***patch_data,
                                           fclaw2d_pack_callback_t patch_pack,
                                           void *user_pack,
                                           fclaw2d_transfer_callback_t
@@ -1603,14 +1571,8 @@ fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
     domain->partition_context = p;
 
     p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
-
-    FCLAW_ASSERT (*patch_data == NULL);
-
     p4est_reset_data (wrap->p4est, data_size, NULL,
                       wrap->p4est->user_pointer);
-
-    *patch_data = FCLAW_ALLOC (void *, domain->local_num_patches);
-    fclaw2d_domain_assign_for_partition (domain, *patch_data);
 
     /* iterate over all patches and pack them in corresponding p4est quadrants
      * user data */
@@ -1765,14 +1727,9 @@ fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
 
 void
 fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * old_domain,
-                                         fclaw2d_domain_t * new_domain,
-                                         void ***patch_data)
+                                         fclaw2d_domain_t * new_domain)
 {
     fclaw2d_domain_partition_t *p;
-
-    *patch_data =
-        FCLAW_REALLOC (*patch_data, void *, new_domain->local_num_patches);
-    fclaw2d_domain_assign_for_partition (new_domain, *patch_data);
 
     FCLAW_ASSERT (old_domain->partition_context == NULL &&
                   new_domain->partition_context != NULL);
@@ -1782,13 +1739,9 @@ fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * old_domain,
 }
 
 void
-fclaw2d_domain_free_after_partition (fclaw2d_domain_t * domain,
-                                     void ***patch_data)
+fclaw2d_domain_free_after_partition (fclaw2d_domain_t * domain)
 {
     p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
-
-    FCLAW_FREE (*patch_data);
-    *patch_data = NULL;
 
     /* free partition_context allocated in allocate_before_partition */
     FCLAW_ASSERT (domain->partition_context != NULL);

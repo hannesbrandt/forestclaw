@@ -106,10 +106,9 @@ void fclaw_partition_domain(fclaw_global_t* glob,
     fclaw_timer_start (&glob->timers[FCLAW_TIMER_PARTITION_BUILD]);
     size_t psize = fclaw_patch_partition_packsize(glob);
     size_t data_size = psize;  /* Includes sizeof(data_type) */
-    void ** patch_data = NULL;
 
     fclaw_domain_allocate_before_partition (*domain, data_size,
-                                            &patch_data, cb_patch_pack, glob,
+                                            cb_patch_pack, glob,
                                             cb_patch_transfer, glob);
 
     fclaw_timer_stop (&glob->timers[FCLAW_TIMER_PARTITION_BUILD]);
@@ -147,8 +146,7 @@ void fclaw_partition_domain(fclaw_global_t* glob,
         fclaw_timer_start (&glob->timers[FCLAW_TIMER_PARTITION_BUILD]);
 
         /* update patch array to point to the numerical data that was received */
-        fclaw_domain_retrieve_after_partition (*domain, domain_partitioned,
-                                               &patch_data);
+        fclaw_domain_retrieve_after_partition (*domain, domain_partitioned);
 
         /* then the old domain is no longer necessary */
         fclaw_domain_reset(glob);
@@ -161,7 +159,7 @@ void fclaw_partition_domain(fclaw_global_t* glob,
     }
 
     /* free the data that was used in the parallel transfer of patches */
-    fclaw_domain_free_after_partition (*domain, &patch_data);
+    fclaw_domain_free_after_partition (*domain);
 
     fclaw_timer_stop (&glob->timers[FCLAW_TIMER_PARTITION]);
 }
