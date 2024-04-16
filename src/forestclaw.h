@@ -926,35 +926,6 @@ typedef void (*fclaw_pack_callback_t) (fclaw_domain_t * domain,
                                        int patchno, void *pack_data_here,
                                        void *user);
 
-/** Allocate data buffer for parallel transfer of all patches.
- * \param [in,out] domain       The memory lives inside this domain.
- * \param [in] data_size        Number of bytes per patch to transfer.
- * \param [in,out] patch_data   Address of an array of void pointers.
- *                              Data is allocated by this function.  After the
- *                              call, *patch_data holds one pointer per patch
- *                              that points to exactly data_size bytes of
- *                              memory that can be written to by forestclaw.
- *                              *patch_data must be NULL before the call.
- */
-void fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
-                                             size_t data_size,
-                                             void ***patch_data,
-                                             fclaw_pack_callback_t patch_pack,
-                                             void *user_pack,
-                                             fclaw_pack_callback_t patch_unpack,
-                                             void *user_unpack);
-
-/** Reallocate data buffer to reflect patch data after partition.
- * \param [in,out] domain       The memory lives inside this domain.
- * \param [in,out] patch_data   Address of an array of void pointers.
- *                              Data is reallocated by this function.  After the
- *                              call, *patch_data holds one pointer per patch
- *                              that points to exactly data_size bytes of
- *                              memory that can be read from by forestclaw.
- */
-void fclaw_domain_retrieve_after_partition (fclaw_domain_t * domain,
-                                            void ***patch_data);
-
 /** Callback to iterate through the partitions.
  * We traverse every patch in the new partition.  If that patch was already
  * on the local processor before the partition, we identify its memory.
@@ -980,6 +951,35 @@ typedef void (*fclaw_transfer_callback_t) (fclaw_domain_t * old_domain,
                                            int blockno,
                                            int old_patchno, int new_patchno,
                                            void *user);
+
+/** Allocate data buffer for parallel transfer of all patches.
+ * \param [in,out] domain       The memory lives inside this domain.
+ * \param [in] data_size        Number of bytes per patch to transfer.
+ * \param [in,out] patch_data   Address of an array of void pointers.
+ *                              Data is allocated by this function.  After the
+ *                              call, *patch_data holds one pointer per patch
+ *                              that points to exactly data_size bytes of
+ *                              memory that can be written to by forestclaw.
+ *                              *patch_data must be NULL before the call.
+ */
+void fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
+                                             size_t data_size,
+                                             void ***patch_data,
+                                             fclaw_pack_callback_t patch_pack,
+                                             void *user_pack,
+                                             fclaw_transfer_callback_t patch_transfer,
+                                             void *user_transfer);
+
+/** Reallocate data buffer to reflect patch data after partition.
+ * \param [in,out] domain       The memory lives inside this domain.
+ * \param [in,out] patch_data   Address of an array of void pointers.
+ *                              Data is reallocated by this function.  After the
+ *                              call, *patch_data holds one pointer per patch
+ *                              that points to exactly data_size bytes of
+ *                              memory that can be read from by forestclaw.
+ */
+void fclaw_domain_retrieve_after_partition (fclaw_domain_t * domain,
+                                            void ***patch_data);
 
 /** Iterate over the previous and partitioned domain simultaneously.
  * We iterate over local patches only.

@@ -1587,8 +1587,8 @@ fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
                                           void ***patch_data,
                                           fclaw2d_pack_callback_t patch_pack,
                                           void *user_pack,
-                                          fclaw2d_pack_callback_t
-                                          patch_unpack, void *user_unpack)
+                                          fclaw2d_transfer_callback_t
+                                          patch_transfer, void *user_transfer)
 {
     fclaw2d_domain_partition_t *p;
 
@@ -1598,8 +1598,8 @@ fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
     p->data_size = data_size;
     p->patch_pack = patch_pack;
     p->user_pack = user_pack;
-    p->patch_unpack = patch_unpack;
-    p->user_unpack = user_unpack;
+    p->patch_transfer = patch_transfer;
+    p->user_transfer = user_transfer;
     domain->partition_context = p;
 
     p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
