@@ -1514,6 +1514,20 @@ fclaw2d_domain_iterate_adapted (fclaw2d_domain_t * old_domain,
     }
 }
 
+static void*
+fclaw2d_domain_pack_get_address (fclaw2d_domain_t * domain, int blockno,
+                                 int patchno)
+{
+    p4est_tree_t *tree;
+    p4est_quadrant_t *q;
+    p4est_wrap_t *wrap;
+
+    wrap = (p4est_wrap_t *) domain->pp;
+    tree = p4est_tree_array_index (wrap->p4est->trees, (p4est_topidx_t) blockno);
+    q = p4est_quadrant_array_index (&tree->quadrants, (p4est_locidx_t) patchno);
+    return q->p.user_data;
+}
+
 static void
 fclaw2d_domain_pack_patches (fclaw2d_domain_t * domain)
 {
@@ -1521,19 +1535,13 @@ fclaw2d_domain_pack_patches (fclaw2d_domain_t * domain)
     size_t zz;
     fclaw2d_block_t *block;
     fclaw2d_patch_t *patch;
-    p4est_tree_t *tree;
-    p4est_quadrant_t *q;
 
-    p4est_wrap_t *wrap = (p4est_wrap_t *) domain->pp;
     FCLAW_ASSERT (domain->partition_context != NULL);
     fclaw2d_domain_partition_t *p = domain->partition_context;
     FCLAW_ASSERT (p->patch_pack != NULL);
     for (zz = 0, blockno = 0; blockno < domain->num_blocks; ++blockno)
     {
         block = domain->blocks + blockno;
-        tree =
-            p4est_tree_array_index (wrap->p4est->trees,
-                                    (p4est_topidx_t) blockno);
 
         for (patchno = 0; patchno < block->num_patches; ++zz, ++patchno)
         {
@@ -1541,10 +1549,8 @@ fclaw2d_domain_pack_patches (fclaw2d_domain_t * domain)
                           (size_t) (block->num_patches_before + patchno));
 
             patch = block->patches + patchno;
-            q = p4est_quadrant_array_index (&tree->quadrants,
-                                            (p4est_locidx_t) patchno);
             p->patch_pack (domain, patch, blockno, patchno,
-                           q->p.user_data, p->user_pack);
+                           fclaw2d_domain_pack_get_address (domain, blockno, patchno), p->user_pack);
         }
     }
     FCLAW_ASSERT (zz == (size_t) domain->local_num_patches);
@@ -1577,19 +1583,6 @@ fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
     /* iterate over all patches and pack them in corresponding p4est quadrants
      * user data */
     fclaw2d_domain_pack_patches (domain);
-}
-
-static void*
-fclaw2d_domain_get_patch_data (fclaw2d_domain_t * domain, int blockno, int patchno)
-{
-    p4est_tree_t *tree;
-    p4est_quadrant_t *q;
-    p4est_wrap_t *wrap;
-
-    wrap = (p4est_wrap_t *) domain->pp;
-    tree = p4est_tree_array_index (wrap->p4est->trees, (p4est_topidx_t) blockno);
-    q = p4est_quadrant_array_index (&tree->quadrants, (p4est_locidx_t) patchno);
-    return q->p.user_data;
 }
 
 void
@@ -1655,7 +1648,7 @@ fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
             FCLAW_ASSERT (nj < new_block->num_patches);
             new_patch = new_block->patches + nj;
             tcb (old_domain, NULL, new_domain, new_patch, i, -1, nj,
-                 fclaw2d_domain_get_patch_data (new_domain, i, nj), user);
+                 fclaw2d_domain_pack_get_address (new_domain, i, nj), user);
 #ifdef FCLAW_ENABLE_DEBUG
             ++ndone;
 #endif
@@ -1698,7 +1691,7 @@ fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
             new_patch = new_block->patches + nj;
             tcb (old_domain, old_patch, new_domain, new_patch,
                  i, oj, nj,
-                 fclaw2d_domain_get_patch_data (new_domain, i, nj), user);
+                 fclaw2d_domain_pack_get_address (new_domain, i, nj), user);
 #ifdef FCLAW_ENABLE_DEBUG
             ++odone;
             ++ndone;
@@ -1713,7 +1706,7 @@ fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
             FCLAW_ASSERT (nj < new_block->num_patches);
             new_patch = new_block->patches + nj;
             tcb (old_domain, NULL, new_domain, new_patch, i, -1, nj,
-                 fclaw2d_domain_get_patch_data (new_domain, i, nj), user);
+                 fclaw2d_domain_pack_get_address (new_domain, i, nj), user);
 #ifdef FCLAW_ENABLE_DEBUG
             ++ndone;
 #endif
