@@ -807,7 +807,8 @@ void fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
  *                              that points to exactly data_size bytes of
  *                              memory that can be read from by forestclaw.
  */
-void fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * domain,
+void fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * old_domain,
+                                              fclaw2d_domain_t * new_domain,
                                               void ***patch_data);
 
 /** Iterate over the previous and partitioned domain simultaneously.

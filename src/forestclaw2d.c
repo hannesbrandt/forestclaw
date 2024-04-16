@@ -1617,15 +1617,6 @@ fclaw2d_domain_allocate_before_partition (fclaw2d_domain_t * domain,
     fclaw2d_domain_pack_patches (domain);
 }
 
-void
-fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * domain,
-                                         void ***patch_data)
-{
-    *patch_data =
-        FCLAW_REALLOC (*patch_data, void *, domain->local_num_patches);
-    fclaw2d_domain_assign_for_partition (domain, *patch_data);
-}
-
 static void*
 fclaw2d_domain_get_patch_data (fclaw2d_domain_t * domain, int blockno, int patchno)
 {
@@ -1770,6 +1761,24 @@ fclaw2d_domain_iterate_partitioned (fclaw2d_domain_t * old_domain,
         FCLAW_ASSERT (nj == new_block->num_patches);
         FCLAW_ASSERT (ndone == nbp);
     }
+}
+
+void
+fclaw2d_domain_retrieve_after_partition (fclaw2d_domain_t * old_domain,
+                                         fclaw2d_domain_t * new_domain,
+                                         void ***patch_data)
+{
+    fclaw2d_domain_partition_t *p;
+
+    *patch_data =
+        FCLAW_REALLOC (*patch_data, void *, new_domain->local_num_patches);
+    fclaw2d_domain_assign_for_partition (new_domain, *patch_data);
+
+    FCLAW_ASSERT (old_domain->partition_context == NULL &&
+                  new_domain->partition_context != NULL);
+    p = new_domain->partition_context;
+    fclaw2d_domain_iterate_partitioned (old_domain, new_domain,
+                                        p->patch_transfer, p->user_transfer);
 }
 
 void

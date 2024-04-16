@@ -822,15 +822,19 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
     }
 }
 
-void fclaw_domain_retrieve_after_partition(fclaw_domain_t *domain, void ***patch_data)
+void fclaw_domain_retrieve_after_partition(fclaw_domain_t *old_domain,
+                                           fclaw_domain_t *new_domain,
+                                           void ***patch_data)
 {
-    if(domain->refine_dim == 2)
+    if(old_domain->refine_dim == 2)
     {
-        fclaw2d_domain_retrieve_after_partition(domain->d2,patch_data);
+        fclaw2d_domain_retrieve_after_partition(old_domain->d2, new_domain->d2,
+                                                patch_data);
     }
-    else if (domain->refine_dim == 3)
+    else if (old_domain->refine_dim == 3)
     {
-        fclaw3d_domain_retrieve_after_partition(domain->d3,patch_data);
+        fclaw3d_domain_retrieve_after_partition(old_domain->d3, new_domain->d3,
+                                                patch_data);
     }
     else
     {
