@@ -85,6 +85,7 @@ fclaw2d_transfer_wrap_cb(fclaw2d_domain_t * old_domain,
                          fclaw2d_patch_t * new_patch,
                          int blockno,
                          int old_patchno, int new_patchno,
+                         void *unpack_data_from_here,
                          void *user);
 
 /**

@@ -879,6 +879,8 @@ typedef void (*fclaw3d_pack_callback_t) (fclaw3d_domain_t * domain,
  *                              old domain and partition.  Minus one otherwise.
  * \param [in] new_patchno      Number of the iterated patch wrt. the new
  *                              domain and partition.
+ * \param [in] unpack_data_from_here If not null, points to the received data
+ *                              to unpack patch data from.
  * \param [in,out] user         Pointer passed to \ref
  *                              fclaw3d_domain_iterate_partitioned.
  */
@@ -888,6 +890,7 @@ typedef void (*fclaw3d_transfer_callback_t) (fclaw3d_domain_t * old_domain,
                                              fclaw3d_patch_t * new_patch,
                                              int blockno,
                                              int old_patchno, int new_patchno,
+                                             void *unpack_data_from_here,
                                              void *user);
 
 typedef struct fclaw3d_domain_partition

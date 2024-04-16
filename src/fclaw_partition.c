@@ -70,7 +70,9 @@ cb_patch_transfer (fclaw_domain_t * old_domain,
                    fclaw_patch_t * old_patch,
                    fclaw_domain_t * new_domain,
                    fclaw_patch_t * new_patch,
-                   int blockno, int old_patchno, int new_patchno, void *user)
+                   int blockno, int old_patchno, int new_patchno,
+                   void *unpack_data_from_here,
+                   void *user)
 {
     /* Transfer data to new domain */
     fclaw_global_iterate_t *g = (fclaw_global_iterate_t *) user;
@@ -91,18 +93,11 @@ cb_patch_transfer (fclaw_domain_t * old_domain,
     }
     else
     {
-        /* We need to rebuild the patch from scratch. 'user' contains
-           the packed data received from remote processor. */   
-        fclaw_domain_t *domain = new_domain;  /* get patch id in new domain */
-
-        fclaw_block_t *this_block = &domain->blocks[blockno];
-        int patch_num = this_block->num_patches_before + new_patchno;
-        void* unpack_data_from_here = (void*) ((void**)g->user)[patch_num];
-
         /* pass in new_domain, since glob only contains old domain at this point
-        and the both domains are needed to increment/decrement patches */
-        fclaw_patch_partition_unpack(g->glob,new_domain,new_patch,
-                                       blockno,new_patchno,unpack_data_from_here);
+           and the both domains are needed to increment/decrement patches */
+        fclaw_patch_partition_unpack (g->glob, new_domain, new_patch,
+                                      blockno, new_patchno,
+                                      unpack_data_from_here);
 
         /* Reason for the following two lines: the glob contains the old domain 
         which is incremented in ddata_old  but we really want to increment the 

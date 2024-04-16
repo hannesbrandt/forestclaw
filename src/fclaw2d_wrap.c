@@ -184,6 +184,7 @@ fclaw2d_transfer_wrap_cb(fclaw2d_domain_t * old_domain_2d,
                                fclaw2d_patch_t * new_patch_2d,
                                int blockno,
                                int old_patchno, int new_patchno,
+                               void *unpack_data_from_here,
                                void *user)
 {
     fclaw_transfer_wrap_user_t* wrap = 
@@ -197,6 +198,7 @@ fclaw2d_transfer_wrap_cb(fclaw2d_domain_t * old_domain_2d,
     wrap->tcb(old_domain, old_patch,
               new_domain, new_patch,
               blockno, old_patchno, new_patchno,
+              unpack_data_from_here,
               wrap->user);
 }
 
