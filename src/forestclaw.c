@@ -786,12 +786,15 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
                                         fclaw_transfer_callback_t
                                         patch_transfer, void *user_transfer)
 {
-    fclaw_pack_wrap_user_t patch_pack_wrap_user;
-    fclaw_transfer_wrap_user_t patch_transfer_wrap_user;
-    patch_pack_wrap_user.pcb = patch_pack;
-    patch_pack_wrap_user.user = user_pack;
-    patch_transfer_wrap_user.tcb = patch_transfer;
-    patch_transfer_wrap_user.user = user_transfer;
+    fclaw_pack_wrap_user_t *patch_pack_wrap_user;
+    fclaw_transfer_wrap_user_t *patch_transfer_wrap_user;
+
+    patch_pack_wrap_user = FCLAW_ALLOC (fclaw_pack_wrap_user_t, 1);
+    patch_pack_wrap_user->pcb = patch_pack;
+    patch_pack_wrap_user->user = user_pack;
+    patch_transfer_wrap_user = FCLAW_ALLOC (fclaw_transfer_wrap_user_t, 1);
+    patch_transfer_wrap_user->tcb = patch_transfer;
+    patch_transfer_wrap_user->user = user_transfer;
 
     if(domain->refine_dim == 2)
     {
@@ -799,9 +802,9 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
                                                  data_size,
                                                  patch_data,
                                                  fclaw2d_pack_wrap_cb,
-                                                 &patch_pack_wrap_user,
+                                                 patch_pack_wrap_user,
                                                  fclaw2d_transfer_wrap_cb,
-                                                 &patch_transfer_wrap_user);
+                                                 patch_transfer_wrap_user);
     }
     else if (domain->refine_dim == 3)
     {
@@ -809,9 +812,9 @@ fclaw_domain_allocate_before_partition (fclaw_domain_t * domain,
                                                  data_size,
                                                  patch_data,
                                                  fclaw3d_pack_wrap_cb,
-                                                 &patch_pack_wrap_user,
+                                                 patch_pack_wrap_user,
                                                  fclaw3d_transfer_wrap_cb,
-                                                 &patch_transfer_wrap_user);
+                                                 patch_transfer_wrap_user);
     }
     else
     {
@@ -867,10 +870,16 @@ void fclaw_domain_free_after_partition(fclaw_domain_t *domain, void ***patch_dat
 {
     if(domain->refine_dim == 2)
     {
+        fclaw2d_domain_partition_t *p = domain->d2->partition_context;
+        FCLAW_FREE (p->user_pack);
+        FCLAW_FREE (p->user_transfer);
         fclaw2d_domain_free_after_partition(domain->d2,patch_data);
     }
     else if (domain->refine_dim == 3)
     {
+        fclaw3d_domain_partition_t *p = domain->d3->partition_context;
+        FCLAW_FREE (p->user_pack);
+        FCLAW_FREE (p->user_transfer);
         fclaw3d_domain_free_after_partition(domain->d3,patch_data);
     }
     else
