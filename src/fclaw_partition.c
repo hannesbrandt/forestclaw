@@ -45,26 +45,6 @@ cb_patch_pack (fclaw_domain_t * domain,
                                 pack_data_here);
 }
 
-static
-void cb_partition_pack(fclaw_domain_t *domain,
-                       fclaw_patch_t *patch,
-                       int blockno,
-                       int patchno,
-                       void *user)
-
-{
-    /* Pack everything in old domain */
-    fclaw_global_iterate_t *g = (fclaw_global_iterate_t *) user;
-
-    fclaw_block_t *this_block = &domain->blocks[blockno];
-    int patch_num = this_block->num_patches_before + patchno;
-    void* pack_data_here = (void*) ((void**)g->user)[patch_num];
-
-    fclaw_patch_partition_pack(g->glob,patch,
-                                 blockno,patchno,
-                                 pack_data_here);
-}
-
 static void
 cb_patch_transfer (fclaw_domain_t * old_domain,
                    fclaw_patch_t * old_patch,
