@@ -1827,7 +1827,7 @@ consumer_free_communication_data (overlap_consumer_comm_t * c)
         rb = (overlap_buf_t *) sc_array_index (c->recv_buffer, bz);
         SC_ASSERT (sb->rank == rb->rank);
 #ifdef FCLAW_ENABLE_DEBUG
-        SC_ASSERT (prev_rank < sb->rank);
+        FCLAW_ASSERT (prev_rank < sb->rank);
         prev_rank = sb->rank;
         if (bz == (size_t) c->iconrank)
         {
