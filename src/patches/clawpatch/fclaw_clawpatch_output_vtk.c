@@ -527,7 +527,7 @@ fclaw2d_vtk_write_field (fclaw_global_t * glob, fclaw2d_vtk_state_t * s,
     int max_num_writes, local_num_writes;
     int mpiret;
     MPI_Offset mpipos;
-#ifdef P4EST_ENABLE_DEBUG
+#ifdef FCLAW_ENABLE_DEBUG
     MPI_Offset mpinew;
 #endif
     MPI_Status mpistatus;
@@ -618,7 +618,7 @@ fclaw2d_vtk_write_field (fclaw_global_t * glob, fclaw2d_vtk_state_t * s,
     s->num_buffered_patches = 0;
 
 #ifdef P4EST_ENABLE_MPIIO
-#ifdef P4EST_ENABLE_DEBUG
+#ifdef FCLAW_ENABLE_DEBUG
     mpiret = MPI_File_get_position (s->mpifile, &mpinew);
     SC_CHECK_MPI (mpiret);
     FCLAW_ASSERT (mpinew - mpipos ==
