@@ -621,10 +621,10 @@ fclaw2d_vtk_write_field (fclaw_global_t * glob, fclaw2d_vtk_state_t * s,
 #ifdef P4EST_ENABLE_DEBUG
     mpiret = MPI_File_get_position (s->mpifile, &mpinew);
     SC_CHECK_MPI (mpiret);
-    P4EST_ASSERT (mpinew - mpipos ==
+    FCLAW_ASSERT (mpinew - mpipos ==
                   (domain->mpirank == 0 ? s->ndsize : 0) +
                   domain->local_num_patches * psize_field);
-    P4EST_ASSERT (domain->mpirank < domain->mpisize - 1 ||
+    FCLAW_ASSERT (domain->mpirank < domain->mpisize - 1 ||
                   mpinew - s->mpibegin ==
                   offset_field + s->ndsize +
                   psize_field * domain->global_num_patches);
